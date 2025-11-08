@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Line : MonoBehaviour
@@ -9,11 +8,6 @@ public class Line : MonoBehaviour
 
     private List<Vector2> _points = new();
 
-    private void Start()
-    {
-        //_collider.transform.position -= transform.position;
-    }
-
     public void SetPosition(Vector2 position)
     {
         if (CamAppend(position) == false) return;
@@ -21,12 +15,43 @@ public class Line : MonoBehaviour
         Vector2 localPosition = transform.InverseTransformPoint(position);
 
         _points.Add(localPosition);
+
+        _renderer.positionCount++;
+        _renderer.SetPosition(_renderer.positionCount - 1, localPosition);
     }
 
     public void OnEndDraw()
     {
-        this.FinalizeLine();
-        this.AddComponent<Rigidbody2D>();
+        if (_points.Count < 2) return;
+
+        this.tag = "Wall";
+
+        Vector2 center = Vector2.zero;
+        foreach (var p in _points)
+        {
+            center += p;
+        }
+        center /= _points.Count;
+
+        transform.position += (Vector3)center;
+
+        for (int i = 0; i < _points.Count; i++)
+        {
+            _points[i] -= center;
+        }
+
+        _renderer.positionCount = _points.Count;
+        for (int i = 0; i < _points.Count; i++)
+        {
+            _renderer.SetPosition(i, _points[i]);
+        }
+
+        _collider.points = _points.ToArray();
+
+        var rb = gameObject.AddComponent<Rigidbody2D>();
+        rb.gravityScale = 1f;
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+        rb.mass = 10;
     }
 
     private bool CamAppend(Vector2 position)
@@ -34,40 +59,5 @@ public class Line : MonoBehaviour
         if (_renderer.positionCount == 0) return true;
 
         return Vector2.Distance(_renderer.GetPosition(_renderer.positionCount - 1), position) > DrawManager.RESOLUTION;
-    }
-
-    private void FinalizeLine()
-    {
-        if (_points.Count < 2) return;
-
-        // 1️⃣ Convert all local points to world space
-        List<Vector2> worldPoints = new List<Vector2>(_points.Count);
-        foreach (var p in _points)
-            worldPoints.Add(transform.TransformPoint(p));
-
-        // 2️⃣ Compute the center in world space
-        Vector2 center = Vector2.zero;
-        foreach (var p in worldPoints)
-            center += p;
-        center /= worldPoints.Count;
-
-        // 3️⃣ Move transform to center
-        transform.position = center;
-
-        // 4️⃣ Rebuild local-space points (relative to new position)
-        for (int i = 0; i < worldPoints.Count; i++)
-            _points[i] = transform.InverseTransformPoint(worldPoints[i]);
-
-        // 5️⃣ Update renderer & collider
-        _renderer.positionCount = _points.Count;
-        for (int i = 0; i < _points.Count; i++)
-            _renderer.SetPosition(i, _points[i]);
-        _collider.points = _points.ToArray();
-
-        // 6️⃣ Add Rigidbody
-        var rb = gameObject.AddComponent<Rigidbody2D>();
-        rb.gravityScale = 1f;
-
-        _points.Clear();
     }
 }
