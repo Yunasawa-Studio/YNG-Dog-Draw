@@ -6,7 +6,16 @@ public class Line : MonoBehaviour
     [SerializeField] private LineRenderer _renderer;
     [SerializeField] private EdgeCollider2D _collider;
 
+    [SerializeField] private Color _lineColor;
+    [SerializeField] private float _mass;
+
     private List<Vector2> _points = new();
+
+    private void Start()
+    {
+        _renderer.startColor = _lineColor;
+        _renderer.endColor = _lineColor;
+    }
 
     public void SetPosition(Vector2 position)
     {
@@ -51,7 +60,7 @@ public class Line : MonoBehaviour
         var rb = gameObject.AddComponent<Rigidbody2D>();
         rb.gravityScale = 1f;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-        rb.mass = 10;
+        rb.mass = _mass;
     }
 
     private bool CamAppend(Vector2 position)

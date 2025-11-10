@@ -85,8 +85,8 @@ public class PolygonMeshCreator : MonoBehaviour
         for (int i = 1; i < verts.Length - 1; i++)
         {
             triangles.Add(0);
-            triangles.Add(i);
             triangles.Add(i + 1);
+            triangles.Add(i);
         }
         return triangles.ToArray();
     }

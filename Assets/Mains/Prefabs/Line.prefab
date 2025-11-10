@@ -196,3 +196,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _renderer: {fileID: 8623244942228539246}
   _collider: {fileID: 8099943520651363014}
+  _lineColor: {r: 0, g: 0, b: 0, a: 1}
+  _mass: 3
